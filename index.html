@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Photo Editor - Govt Exam Special</title>
+    <title>Pro Photo Editor - Resize & BG Remover</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -20,7 +20,6 @@
         .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
         .preset-btn { padding: 8px; font-size: 11px; font-weight: 600; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; }
         .preset-btn:hover { background: #e2e8f0; }
-        .preset-btn i { color: var(--accent); margin-right: 4px; }
 
         .upload-btn-wrapper { margin-bottom: 20px; position: relative; }
         .btn-upload { border: 2px dashed var(--accent); color: var(--accent); background: #eff6ff; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
@@ -60,12 +59,12 @@
 
         <div class="editor-card">
             <div class="controls-panel">
-                <p style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:10px;">Exam Presets (Quick Resize):</p>
+                <p style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:10px;">Exam Presets:</p>
                 <div class="preset-grid">
-                    <button class="preset-btn" onclick="applyPreset(350, 450, 45)"><i class="fas fa-user-tie"></i> Passport</button>
-                    <button class="preset-btn" onclick="applyPreset(413, 531, 50)"><i class="fas fa-university"></i> SSC/UPSC</button>
-                    <button class="preset-btn" onclick="applyPreset(400, 200, 20)"><i class="fas fa-pen-nib"></i> Signature</button>
-                    <button class="preset-btn" onclick="applyPreset(600, 600, 100)"><i class="fas fa-id-card"></i> Visa Size</button>
+                    <button class="preset-btn" onclick="applyPreset(350, 450)"><i class="fas fa-user-tie"></i> Passport</button>
+                    <button class="preset-btn" onclick="applyPreset(413, 531)"><i class="fas fa-university"></i> SSC/UPSC</button>
+                    <button class="preset-btn" onclick="applyPreset(400, 200)"><i class="fas fa-pen-nib"></i> Signature</button>
+                    <button class="preset-btn" onclick="applyPreset(600, 600)"><i class="fas fa-id-card"></i> Visa Size</button>
                 </div>
 
                 <div class="upload-btn-wrapper">
@@ -84,7 +83,7 @@
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label">Canvas Background</label>
+                    <label class="control-label">Background Color</label>
                     <input type="color" id="bgColor" value="#ffffff" style="width:100%; height:30px; border:none; border-radius:4px; cursor:pointer;">
                 </div>
 
@@ -93,8 +92,13 @@
                     <input type="range" id="zoomSlider" class="slider-range" min="0.1" max="2.5" step="0.01" value="1">
                 </div>
 
+                <div class="control-group">
+                    <label class="control-label">Brightness <span id="brightValue">100%</span></label>
+                    <input type="range" id="brightnessSlider" class="slider-range" min="50" max="150" value="100">
+                </div>
+
                 <div class="control-group" style="background: #fff7ed;">
-                    <label class="control-label" style="color:#c2410c;">Output File Quality (KB)</label>
+                    <label class="control-label" style="color:#c2410c;">Output Quality (KB)</label>
                     <input type="range" id="qualitySlider" class="slider-range" min="0.1" max="1.0" step="0.01" value="0.8">
                     <div id="sizeEstimate" class="size-badge">Size: - KB</div>
                     <div id="limitMsg" class="limit-msg">Limit: 10KB to 3MB only!</div>
@@ -119,6 +123,7 @@
         const imgInput = document.getElementById('imageInput');
         const zoomSlider = document.getElementById('zoomSlider');
         const qualitySlider = document.getElementById('qualitySlider');
+        const brightnessSlider = document.getElementById('brightnessSlider');
         const bgColorInput = document.getElementById('bgColor');
         const brushSlider = document.getElementById('brushSize');
         const downloadBtn = document.getElementById('downloadBtn');
@@ -151,11 +156,12 @@
         function resetView() {
             scale = 1; offsetX = 0; offsetY = 0;
             zoomSlider.value = 1;
+            brightnessSlider.value = 100;
             document.getElementById('zoomValue').innerText = "100%";
+            document.getElementById('brightValue').innerText = "100%";
         }
 
-        // Preset Function
-        function applyPreset(w, h, targetKb) {
+        function applyPreset(w, h) {
             canvas.width = w;
             canvas.height = h;
             if(isLoaded) render();
@@ -175,16 +181,18 @@
             tempCanvas.width = img.width;
             tempCanvas.height = img.height;
             let tCtx = tempCanvas.getContext('2d');
+            
             tCtx.drawImage(img, 0, 0);
             tCtx.globalCompositeOperation = 'destination-in';
             tCtx.drawImage(maskCanvas, 0, 0);
             
+            // Brightness filter applied here
+            ctx.filter = `brightness(${brightnessSlider.value}%)`;
             ctx.drawImage(tempCanvas, -img.width/2, -img.height/2);
             ctx.restore();
             updateSize();
         }
 
-        // Erase Logic
         canvas.onmousedown = (e) => { isDrawing = true; if(mode === 'erase') paint(e); };
         window.onmousemove = (e) => { 
             if(!isDrawing) return; 
@@ -221,6 +229,7 @@
         }
 
         zoomSlider.oninput = () => { scale = zoomSlider.value; document.getElementById('zoomValue').innerText = Math.round(scale*100)+'%'; render(); };
+        brightnessSlider.oninput = () => { document.getElementById('brightValue').innerText = brightnessSlider.value+'%'; render(); };
         qualitySlider.oninput = render;
         bgColorInput.oninput = render;
         brushSlider.oninput = () => document.getElementById('brushVal').innerText = brushSlider.value;
@@ -229,10 +238,8 @@
             const q = parseFloat(qualitySlider.value);
             const dataUrl = canvas.toDataURL('image/jpeg', q);
             const sizeInKb = Math.round((dataUrl.length - 22) * 0.75) / 1024;
-            
             document.getElementById('sizeEstimate').innerText = `Size: ${sizeInKb.toFixed(2)} KB`;
 
-            // Strict Validation
             if(sizeInKb < 10 || sizeInKb > 3072) {
                 downloadBtn.disabled = true;
                 document.getElementById('limitMsg').style.display = 'block';
