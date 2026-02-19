@@ -1,23 +1,125 @@
-<div class="sidebar">
-    <h3><i class="fas fa-info-circle"></i> Instructions</h3>
-    <ul style="font-size: 12px; padding-left: 15px; line-height: 1.8; color: #475569;">
-        <li>Photo upload karke zoom adjust karein.</li>
-        <li>Exam ke hisab se <b>Presets</b> select karein.</li>
-        <li>Download se pehle KB size check karein.</li>
-    </ul>
-    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;">
-    
-    <button class="preset-btn" style="background:#25d366; color:white; border:none; text-align:center; font-weight:bold;" onclick="shareOnWhatsApp()">
-        <i class="fab fa-whatsapp"></i> Share on WhatsApp
-    </button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Photo Editor - Govt Exam Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #1e293b; --accent: #3b82f6; --success: #059669; }
+        body { font-family: sans-serif; background: #f1f5f9; margin: 0; }
+        
+        /* Dashboard Layout Fix */
+        .main-wrapper { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; justify-content: center; }
+        
+        .sidebar { width: 250px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .editor-container { flex: 1; max-width: 800px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        
+        .ad-space { width: 100%; max-width: 900px; height: 110px; margin: 10px auto; background: #fff; overflow: hidden; display: flex; justify-content: center; }
+        .ad-space img { width: 100%; height: 100%; object-fit: contain; }
+
+        canvas { border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: white; max-width: 100%; height: auto; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-wrapper { flex-direction: column; align-items: center; }
+            .sidebar, .editor-container { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="topAdArea" class="ad-space"></div>
+
+<div class="main-wrapper">
+    <div class="sidebar">
+        <h3 style="font-size:16px; border-bottom:2px solid var(--accent); padding-bottom:5px;">Exam Presets</h3>
+        <button style="width:100%; margin:5px 0; padding:10px; cursor:pointer;" onclick="setPreset(350, 450)">Passport Photo</button>
+        <button style="width:100%; margin:5px 0; padding:10px; cursor:pointer;" onclick="setPreset(300, 150)">Signature</button>
+    </div>
+
+    <div class="editor-container">
+        <input type="file" id="imageInput" style="margin-bottom:15px;">
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+            <input type="text" id="userName" placeholder="Name on Photo" oninput="draw()">
+            <input type="text" id="userDate" placeholder="Date on Photo" oninput="draw()">
+            <label>Zoom: <input type="range" id="zoom" min="0.1" max="2" step="0.01" value="1" oninput="draw()"></label>
+            <label>Quality: <input type="range" id="quality" min="0.1" max="1" step="0.1" value="0.8" oninput="draw()"></label>
+            <div id="kbSize" style="font-weight:bold; color:var(--success);">0 KB</div>
+        </div>
+        <canvas id="canvas" width="350" height="450"></canvas>
+        <br><br>
+        <button id="dlBtn" style="background:var(--success); color:white; padding:15px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Download Photo</button>
+    </div>
+
+    <div class="sidebar">
+        <h3 style="font-size:16px; border-bottom:2px solid var(--accent); padding-bottom:5px;">Share</h3>
+        <button style="width:100%; background:#25d366; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;" onclick="share()">Share on WhatsApp</button>
+    </div>
 </div>
 
-<script>
-    // WhatsApp Share Function
-    function shareOnWhatsApp() {
-        const siteUrl = window.location.href; // Yeh apne aap aapka Vercel link utha lega
-        const message = "Dosto, agar photo resize karni ho ya naam/date likhna ho govt exams ke liye, toh ye tool best hai: " + siteUrl;
-        const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(message);
-        window.open(whatsappUrl, '_blank');
-    }
+<div id="botAdArea" class="ad-space"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC7de5a69594736", 
+        authDomain: "photo-resizer-e8230.firebaseapp.com",
+        projectId: "photo-resizer-e8230",
+        databaseURL: "https://photo-resizer-e8230-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    onValue(ref(db, 'tool_ads'), (s) => {
+        const d = s.val();
+        if(d) {
+            if(d.top) document.getElementById('topAdArea').innerHTML = `<a href="${d.top.url}" target="_blank"><img src="${d.top.img}"></a>`;
+            if(d.bottom) document.getElementById('botAdArea').innerHTML = `<a href="${d.bottom.url}" target="_blank"><img src="${d.bottom.img}"></a>`;
+        }
+    });
+
+    const cvs = document.getElementById('canvas');
+    const ctx = cvs.getContext('2d');
+    let img = new Image();
+
+    document.getElementById('imageInput').onchange = (e) => {
+        const r = new FileReader();
+        r.onload = (f) => { img.onload = () => draw(); img.src = f.target.result; };
+        r.readAsDataURL(e.target.files[0]);
+    };
+
+    window.setPreset = (w, h) => { cvs.width = w; cvs.height = h; draw(); };
+
+    window.draw = () => {
+        if(!img.src) return;
+        ctx.fillStyle = "white"; ctx.fillRect(0,0, cvs.width, cvs.height);
+        ctx.save();
+        ctx.translate(cvs.width/2, (cvs.height-60)/2);
+        ctx.scale(document.getElementById('zoom').value, document.getElementById('zoom').value);
+        ctx.drawImage(img, -img.width/2, -img.height/2);
+        ctx.restore();
+
+        const n = document.getElementById('userName').value;
+        const d = document.getElementById('userDate').value;
+        if(n || d) {
+            ctx.fillStyle = "white"; ctx.fillRect(0, cvs.height-70, cvs.width, 70);
+            ctx.fillStyle = "black"; ctx.font = "bold 16px Arial"; ctx.textAlign="center";
+            ctx.fillText(n.toUpperCase(), cvs.width/2, cvs.height-40);
+            ctx.fillText(d, cvs.width/2, cvs.height-15);
+        }
+
+        const data = cvs.toDataURL('image/jpeg', parseFloat(document.getElementById('quality').value));
+        document.getElementById('kbSize').innerText = Math.round((data.length - 22) * 0.75 / 1024) + " KB";
+        document.getElementById('dlBtn').onclick = () => { const a = document.createElement('a'); a.download="photo.jpg"; a.href=data; a.click(); };
+    };
+
+    window.share = () => {
+        window.open("https://api.whatsapp.com/send?text=Best Photo Tool: " + window.location.href);
+    };
 </script>
+</body>
+</html>
