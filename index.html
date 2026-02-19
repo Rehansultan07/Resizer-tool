@@ -3,71 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Photo Editor - Resize & Name/Date</title>
+    <title>Pro Photo Editor - Professional Govt Exam Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1e293b; --accent: #3b82f6; --success: #059669; }
-        body { font-family: 'Poppins', sans-serif; background-color: #f3f4f6; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        .navbar { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+        :root { --primary: #1e293b; --accent: #3b82f6; --success: #059669; --bg: #f1f5f9; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; overflow-x: hidden; }
         
-        /* Perfect Fit Banner CSS */
-        .ad-space { width: 100%; max-width: 900px; height: 120px; margin: 15px auto; background: #fff; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .ad-space img { width: 100%; height: 100%; object-fit: contain; background-color: #f9f9f9; transition: transform 0.3s; }
-        .ad-space img:hover { transform: scale(1.02); }
+        .navbar { background: var(--primary); color: white; padding: 10px 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        
+        /* Banner Styling */
+        .ad-space { width: 100%; max-width: 1100px; height: 110px; margin: 15px auto; background: #fff; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .ad-space img { width: 100%; height: 100%; object-fit: contain; }
 
-        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .editor-card { background: white; width: 100%; max-width: 1200px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: flex; flex-direction: row; overflow: hidden; }
-        .controls-panel { padding: 20px; width: 350px; border-right: 1px solid #e5e7eb; overflow-y: auto; max-height: 85vh; }
-        .editor-panel { flex: 1; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 500px; }
-        .canvas-container { box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 8px solid white; background: white; }
-        .control-group { margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 8px; }
-        .btn-upload { border: 2px dashed var(--accent); color: var(--accent); background: #eff6ff; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; position: relative; }
-        .btn-download { background: var(--success); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
-        @media (max-width: 768px) { .editor-card { flex-direction: column; } .controls-panel { width: 100%; } }
+        .dashboard { display: grid; grid-template-columns: 250px 1fr 250px; gap: 20px; padding: 0 20px 20px 20px; max-width: 1500px; margin: 0 auto; }
+
+        /* Sidebar Styling */
+        .sidebar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
+        .sidebar h3 { font-size: 16px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 15px; color: var(--primary); }
+        .preset-btn { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; transition: 0.2s; }
+        .preset-btn:hover { background: var(--accent); color: white; }
+
+        /* Main Editor */
+        .editor-card { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+        .editor-main { display: flex; flex-direction: row; }
+        .controls { width: 320px; padding: 20px; border-right: 1px solid #eee; background: #fff; }
+        .preview { flex: 1; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 500px; }
+        .canvas-wrap { border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+        .input-box { margin-bottom: 15px; }
+        .input-box label { font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="range"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        
+        .btn-main { background: var(--success); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        @media (max-width: 1100px) { .dashboard { grid-template-columns: 1fr; } .sidebar { order: 2; } .editor-main { flex-direction: column; } .controls { width: 100%; } }
     </style>
 </head>
 <body>
 
 <div class="navbar">
-    <div class="nav-brand"><h1>PRO EDITOR</h1></div>
+    <h2><i class="fas fa-camera-retro"></i> PRO PHOTO RESIZER</h2>
 </div>
 
-<div class="main-container">
-    <div id="topAdArea" class="ad-space"></div>
+<div id="topAdArea" class="ad-space"></div>
+
+<div class="dashboard">
+    <div class="sidebar">
+        <h3><i class="fas fa-list"></i> Exam Presets</h3>
+        <button class="preset-btn" onclick="applyPreset('passport')">Standard Passport Photo</button>
+        <button class="preset-btn" onclick="applyPreset('ssc')">SSC (20-50 KB)</button>
+        <button class="preset-btn" onclick="applyPreset('up')">UP Police Special</button>
+        <button class="preset-btn" onclick="applyPreset('sig')">Signature (10-20 KB)</button>
+        <p style="font-size: 11px; color: #666; margin-top: 20px;">*One-click size setting</p>
+    </div>
 
     <div class="editor-card">
-        <div class="controls-panel">
-            <div class="btn-upload">
-                Upload Photo
-                <input type="file" id="imageInput" accept="image/*" style="position:absolute; left:0; top:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+        <div class="editor-main">
+            <div class="controls">
+                <div style="position:relative; margin-bottom:15px;">
+                    <button class="btn-main" style="background:var(--accent)">Choose Photo</button>
+                    <input type="file" id="imageInput" accept="image/*" style="position:absolute; top:0; left:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+                </div>
+                
+                <div class="input-box">
+                    <label>Candidate Name</label>
+                    <input type="text" id="userName" placeholder="Type name..." oninput="render()">
+                </div>
+                <div class="input-box">
+                    <label>Date of Photo</label>
+                    <input type="text" id="userDate" placeholder="DD-MM-YYYY" oninput="render()">
+                </div>
+                
+                <div class="input-box">
+                    <label>Zoom & Brightness</label>
+                    <input type="range" id="zoom" min="0.1" max="2" step="0.01" value="1" oninput="render()">
+                    <input type="range" id="bright" min="50" max="150" value="100" oninput="render()">
+                </div>
+
+                <div class="input-box" style="background:#fff7ed; padding:10px; border-radius:8px;">
+                    <label>File Quality (Size Control)</label>
+                    <input type="range" id="quality" min="0.1" max="1.0" step="0.01" value="0.8" oninput="render()">
+                    <div id="sizeInfo" style="text-align:center; font-weight:bold; color:var(--primary); margin-top:5px;">- KB</div>
+                </div>
+
+                <button id="dlBtn" class="btn-main" disabled>Download Now</button>
             </div>
-            <div class="control-group">
-                <label style="font-size:12px; font-weight:700;">Name & Date</label>
-                <input type="text" id="userName" placeholder="Full Name" style="width:100%; margin:5px 0; padding:8px;" oninput="render()">
-                <input type="text" id="userDate" placeholder="Date" style="width:100%; padding:8px;" oninput="render()">
-            </div>
-            <div class="control-group">
-                <label>Zoom & Brightness</label>
-                <input type="range" id="zoomSlider" min="0.1" max="2.5" step="0.01" value="1" style="width:100%;" oninput="render()">
-                <input type="range" id="brightSlider" min="50" max="150" value="100" style="width:100%;" oninput="render()">
-            </div>
-            <div class="control-group" style="background:#fff7ed;">
-                <label>Quality (KB)</label>
-                <input type="range" id="qualitySlider" min="0.1" max="1.0" step="0.01" value="0.8" style="width:100%;" oninput="render()">
-                <div id="sizeEstimate" style="font-weight:700; text-align:center; margin-top:5px;">- KB</div>
-            </div>
-            <button id="downloadBtn" class="btn-download" disabled>Download JPG</button>
-        </div>
-        <div class="editor-panel">
-            <div class="canvas-container">
-                <canvas id="editorCanvas" width="350" height="450"></canvas>
+            
+            <div class="preview">
+                <div class="canvas-wrap">
+                    <canvas id="canvas" width="350" height="450"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="botAdArea" class="ad-space"></div>
+    <div class="sidebar">
+        <h3><i class="fas fa-info-circle"></i> Instructions</h3>
+        <ul style="font-size: 12px; padding-left: 15px; line-height: 1.8;">
+            <li>Upload high quality photo.</li>
+            <li>Use <b>Name/Date</b> if required.</li>
+            <li>Adjust <b>Quality</b> slider for KB.</li>
+        </ul>
+        <hr>
+        <button class="preset-btn" style="background:#25d366; color:white; border:none; text-align:center;" onclick="window.open('whatsapp://send?text=Check this cool photo resizer tool!')">
+            <i class="fab fa-whatsapp"></i> Share on WhatsApp
+        </button>
+    </div>
 </div>
+
+<div id="botAdArea" class="ad-space"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -83,58 +128,59 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    onValue(ref(db, 'tool_ads'), (snapshot) => {
-        const ads = snapshot.val();
+    onValue(ref(db, 'tool_ads'), (snap) => {
+        const ads = snap.val();
         if(ads) {
             if(ads.top) document.getElementById('topAdArea').innerHTML = `<a href="${ads.top.url}" target="_blank"><img src="${ads.top.img}"></a>`;
-            else document.getElementById('topAdArea').innerHTML = "";
             if(ads.bottom) document.getElementById('botAdArea').innerHTML = `<a href="${ads.bottom.url}" target="_blank"><img src="${ads.bottom.img}"></a>`;
-            else document.getElementById('botAdArea').innerHTML = "";
-        } else {
-            document.getElementById('topAdArea').innerHTML = "";
-            document.getElementById('botAdArea').innerHTML = "";
         }
     });
 
-    // Editor Logic
-    const canvas = document.getElementById('editorCanvas');
-    const ctx = canvas.getContext('2d');
-    let img = new Image(); let isLoaded = false;
+    // Editor Core
+    const cvs = document.getElementById('canvas');
+    const ctx = cvs.getContext('2d');
+    let rawImg = new Image(); let loaded = false;
 
     document.getElementById('imageInput').onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => { img.onload = () => { isLoaded = true; render(); }; img.src = ev.target.result; };
-        reader.readAsDataURL(e.target.files[0]);
+        const r = new FileReader();
+        r.onload = (f) => { rawImg.onload = () => { loaded = true; render(); }; rawImg.src = f.target.result; };
+        r.readAsDataURL(e.target.files[0]);
+    };
+
+    // Preset Function
+    window.applyPreset = (type) => {
+        if(type === 'sig') { cvs.width = 300; cvs.height = 150; document.getElementById('quality').value = 0.5; }
+        else { cvs.width = 350; cvs.height = 450; document.getElementById('quality').value = 0.8; }
+        render();
     };
 
     window.render = () => {
-        if(!isLoaded) return;
-        ctx.fillStyle = "white"; ctx.fillRect(0,0, canvas.width, canvas.height);
+        if(!loaded) return;
+        ctx.fillStyle = "white"; ctx.fillRect(0,0, cvs.width, cvs.height);
         ctx.save();
-        ctx.translate(canvas.width/2, (canvas.height-60)/2);
-        ctx.scale(document.getElementById('zoomSlider').value, document.getElementById('zoomSlider').value);
-        ctx.filter = `brightness(${document.getElementById('brightSlider').value}%)`;
-        ctx.drawImage(img, -img.width/2, -img.height/2);
+        ctx.translate(cvs.width/2, (cvs.height-60)/2);
+        ctx.scale(document.getElementById('zoom').value, document.getElementById('zoom').value);
+        ctx.filter = `brightness(${document.getElementById('bright').value}%)`;
+        ctx.drawImage(rawImg, -rawImg.width/2, -rawImg.height/2);
         ctx.restore();
 
-        if(document.getElementById('userName').value) {
-            ctx.fillStyle = "white"; ctx.fillRect(0, canvas.height-70, canvas.width, 70);
+        const name = document.getElementById('userName').value;
+        const date = document.getElementById('userDate').value;
+        if(name || date) {
+            ctx.fillStyle = "white"; ctx.fillRect(0, cvs.height-70, cvs.width, 70);
             ctx.fillStyle = "black"; ctx.font = "bold 16px Arial"; ctx.textAlign="center";
-            ctx.fillText(document.getElementById('userName').value.toUpperCase(), canvas.width/2, canvas.height-40);
-            ctx.fillText(document.getElementById('userDate').value, canvas.width/2, canvas.height-15);
+            ctx.fillText(name.toUpperCase(), cvs.width/2, cvs.height-40);
+            ctx.fillText(date, cvs.width/2, cvs.height-15);
         }
-        updateSize();
-    };
-
-    function updateSize() {
-        const dataUrl = canvas.toDataURL('image/jpeg', parseFloat(document.getElementById('qualitySlider').value));
-        const kb = Math.round((dataUrl.length - 22) * 0.75) / 1024;
-        document.getElementById('sizeEstimate').innerText = kb.toFixed(2) + " KB";
-        document.getElementById('downloadBtn').disabled = (kb < 10 || kb > 3072);
-        document.getElementById('downloadBtn').onclick = () => {
-            const a = document.createElement('a'); a.download = "Photo.jpg"; a.href = dataUrl; a.click();
+        
+        const data = cvs.toDataURL('image/jpeg', parseFloat(document.getElementById('quality').value));
+        const kb = Math.round((data.length - 22) * 0.75) / 1024;
+        document.getElementById('sizeInfo').innerText = kb.toFixed(2) + " KB";
+        document.getElementById('dlBtn').disabled = false;
+        document.getElementById('dlBtn').onclick = () => {
+            const a = document.createElement('a'); a.download = "edit.jpg"; a.href = data; a.click();
         };
-    }
+    };
 </script>
 </body>
 </html>
