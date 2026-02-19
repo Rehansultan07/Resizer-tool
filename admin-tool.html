@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Admin</title>
+    <title>Tool Admin - Manage Banners</title>
     <script>
         if (sessionStorage.getItem("toolAdmin") !== "true") {
             let pin = prompt("Admin PIN:");
@@ -14,19 +14,24 @@
     <style>
         body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
         .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        h2 { border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-top: 0; }
+        label { font-size: 12px; font-weight: bold; color: #666; }
+        input { width: 100%; padding: 12px; margin: 8px 0 15px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
         button { background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="box">
-    <h2>Manage Tool Banners</h2>
-    <input type="text" id="tUrl" placeholder="Top Ad Link">
-    <input type="text" id="tImg" placeholder="Top Image URL">
-    <hr>
-    <input type="text" id="bUrl" placeholder="Bottom Ad Link">
-    <input type="text" id="bImg" placeholder="Bottom Image URL">
+    <h2>Banner Management</h2>
+    <label>TOP BANNER (Link & Image)</label>
+    <input type="text" id="tUrl" placeholder="Affiliate Link (e.g. BankSaathi)">
+    <input type="text" id="tImg" placeholder="Banner Image URL">
+    
+    <label>BOTTOM BANNER (Link & Image)</label>
+    <input type="text" id="bUrl" placeholder="Ad Link (e.g. Amazon)">
+    <input type="text" id="bImg" placeholder="Banner Image URL">
+    
     <button onclick="saveAds()">Update Banners Live 🚀</button>
 </div>
 
@@ -34,25 +39,31 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Use same config as index.html
+    // Corrected Config
     const firebaseConfig = {
-  apiKey: "AIzaSy...", 
-  authDomain: "photo-resizer-e8230.firebaseapp.com",
-  projectId: "photo-resizer-e8230",
-  storageBucket: "photo-resizer-e8230.firebasestorage.app",
-  messagingSenderId: "115249150723",
-  appId: "1:115249150723:web:84e1585..."
-};
+        apiKey: "AIzaSyC7de5a69594736", 
+        authDomain: "photo-resizer-e8230.firebaseapp.com",
+        projectId: "photo-resizer-e8230",
+        databaseURL: "https://photo-resizer-e8230-default-rtdb.asia-southeast1.firebasedatabase.app",
+        storageBucket: "photo-resizer-e8230.firebasestorage.app",
+        messagingSenderId: "115249150723",
+        appId: "1:115249150723:web:84e1585ec7de5a69594736"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
     window.saveAds = () => {
+        const topImg = document.getElementById('tImg').value;
+        const botImg = document.getElementById('bImg').value;
+
+        if(!topImg || !botImg) { alert("Please enter image URLs!"); return; }
+
         set(ref(db, 'tool_ads'), {
-            top: { url: document.getElementById('tUrl').value, img: document.getElementById('tImg').value },
-            bot: { url: document.getElementById('bUrl').value, img: document.getElementById('bImg').value }
-        }).then(() => alert("Ads Live! Refresh tool to see."));
+            top: { url: document.getElementById('tUrl').value, img: topImg },
+            bot: { url: document.getElementById('bUrl').value, img: botImg }
+        }).then(() => alert("Banners are now LIVE! 🚀"))
+          .catch(err => alert("Error: " + err.message));
     };
 </script>
 </body>
