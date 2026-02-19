@@ -3,112 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Photo Resizer | Govt Form Image Compressor</title>
+    <title>Digi Mitra Pro Editor - Photo Resizer & BG Remover</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #2563eb; --sec: #64748b; --bg: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
-        h1 { color: #1e293b; font-size: 24px; margin-bottom: 10px; }
-        p { color: var(--sec); font-size: 14px; margin-bottom: 25px; }
+        :root { --primary: #002e5d; --accent: #3b82f6; --bg-light: #f8fafc; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f3f4f6; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
+        .navbar { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .nav-brand h1 { font-size: 20px; margin: 0; letter-spacing: 1px; }
+        .back-btn { background: #f59e0b; color: #000; text-decoration: none; padding: 8px 18px; border-radius: 4px; font-weight: 600; font-size: 13px; }
         
-        .upload-area { border: 2px dashed #cbd5e1; padding: 30px; border-radius: 15px; cursor: pointer; transition: 0.3s; margin-bottom: 20px; }
-        .upload-area:hover { border-color: var(--primary); background: #eff6ff; }
-        #fileInput { display: none; }
+        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .editor-card { background: white; width: 100%; max-width: 1150px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
         
-        .controls { text-align: left; background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #475569; }
-        input[type="range"] { width: 100%; margin-bottom: 15px; }
+        .controls-panel { padding: 20px; background: #fff; flex: 1; border-right: 1px solid #e5e7eb; max-height: 85vh; overflow-y: auto; }
+        .upload-btn-wrapper { margin-bottom: 20px; position: relative; }
+        .btn-upload { border: 2px dashed var(--accent); color: var(--accent); background: #eff6ff; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-upload:hover { background: #dbeafe; }
         
-        .download-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; display: none; }
-        .preview-img { max-width: 100%; border-radius: 10px; margin-top: 15px; display: none; border: 1px solid #ddd; }
-        .info { font-size: 12px; margin-top: 10px; color: var(--primary); font-weight: bold; }
+        .tool-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tool-btn { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; background: white; font-size: 13px; font-weight: 600; transition: 0.3s; }
+        .tool-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        .control-group { margin-bottom: 15px; background: var(--bg-light); padding: 12px; border-radius: 8px; border: 1px solid #edf2f7; }
+        .control-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        .slider-range { width: 100%; cursor: pointer; }
+        
+        .editor-panel { flex: 2; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 30px; position: relative; min-height: 500px; }
+        .canvas-container { box-shadow: 0 20px 50px rgba(0,0,0,0.2); border: 8px solid white; border-radius: 4px; position: relative; background: white; }
+        #editorCanvas { display: block; max-width: 100%; cursor: crosshair; }
+        
+        .btn-download { background: linear-gradient(135deg, #059669, #047857); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        
+        .ad-space { width: 100%; max-width: 1150px; height: 90px; background: #fff; border: 1px dashed #bbb; margin: 15px 0; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; border-radius: 8px; }
+
+        @media (min-width: 768px) { .editor-card { flex-direction: row; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Photo Resizer</h1>
-    <p>Resize & Compress photos for Sarkari Forms</p>
-
-    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <i style="font-size: 40px; color: var(--sec);">📷</i>
-        <p>Click to Upload Photo</p>
-        <input type="file" id="fileInput" accept="image/*">
+    <div class="navbar">
+        <div class="nav-brand"><i class="fas fa-bolt"></i> <h1>DIGI MITRA PRO EDITOR</h1></div>
+        <a href="dashboard.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Home</a>
     </div>
 
-    <div class="controls" id="controls" style="display: none;">
-        <label>Quality (Compress KB): <span id="qualVal">80</span>%</label>
-        <input type="range" id="quality" min="10" max="100" value="80">
+    <div class="main-container">
+        <div class="ad-space">Google AdSense - Top Banner</div>
+
+        <div class="editor-card">
+            <div class="controls-panel">
+                <div class="upload-btn-wrapper">
+                    <button class="btn-upload"><i class="fas fa-cloud-upload-alt"></i> Upload Photo</button>
+                    <input type="file" id="imageInput" accept="image/*" style="position:absolute; left:0; top:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+                </div>
+
+                <div class="tool-bar">
+                    <button class="tool-btn active" id="moveMode"><i class="fas fa-mouse-pointer"></i> Zoom/Move</button>
+                    <button class="tool-btn" id="eraseMode"><i class="fas fa-eraser"></i> Erase BG</button>
+                </div>
+
+                <div class="control-group" id="brushSettings" style="display:none; border-left: 4px solid #3b82f6;">
+                    <label class="control-label">Brush Size: <span id="brushVal">25</span></label>
+                    <input type="range" id="brushSize" class="slider-range" min="5" max="80" value="25">
+                    <p style="font-size:10px; color:#64748b; margin-top:5px;">Tip: Use brush to remove background edges.</p>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Set Background Color</label>
+                    <input type="color" id="bgColor" value="#ffffff" style="width:100%; height:35px; border:none; border-radius:4px; cursor:pointer;">
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Zoom Level <span id="zoomValue">100%</span></label>
+                    <input type="range" id="zoomSlider" class="slider-range" min="0.1" max="2.5" step="0.05" value="1">
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Brightness <span id="brightValue">100%</span></label>
+                    <input type="range" id="brightnessSlider" class="slider-range" min="50" max="150" value="100">
+                </div>
+
+                <div class="control-group" style="background: #fff7ed; border-color: #fed7aa;">
+                    <label class="control-label" style="color:#9a3412;">File Quality (KB Control)</label>
+                    <input type="range" id="qualitySlider" class="slider-range" min="0.1" max="1.0" step="0.05" value="0.8">
+                    <div id="sizeEstimate" style="font-weight:700; text-align:center; color:#c2410c; font-size:14px; margin-top:5px;">Size: - KB</div>
+                </div>
+
+                <button id="downloadBtn" class="btn-download" disabled><i class="fas fa-file-download"></i> Download Image</button>
+            </div>
+
+            <div class="editor-panel">
+                <div class="canvas-container">
+                    <canvas id="editorCanvas" width="350" height="450"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-space">Google AdSense - Bottom Banner</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('editorCanvas');
+        const ctx = canvas.getContext('2d');
+        const imgInput = document.getElementById('imageInput');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const bgColorInput = document.getElementById('bgColor');
+        const brushSlider = document.getElementById('brushSize');
         
-        <label>Width (Pixels):</label>
-        <input type="number" id="width" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box;">
-    </div>
+        let img = new Image();
+        let maskCanvas = document.createElement('canvas');
+        let maskCtx = maskCanvas.getContext('2d');
+        
+        let isLoaded = false;
+        let scale = 1, offsetX = 0, offsetY = 0;
+        let mode = 'move';
+        let isDrawing = false;
 
-    <img id="preview" class="preview-img">
-    <div id="sizeInfo" class="info"></div>
-    <button id="download" class="download-btn">Download Resized Image</button>
-</div>
-
-<script>
-    const fileInput = document.getElementById('fileInput');
-    const qualityInput = document.getElementById('quality');
-    const widthInput = document.getElementById('width');
-    const preview = document.getElementById('preview');
-    const downloadBtn = document.getElementById('download');
-    const sizeInfo = document.getElementById('sizeInfo');
-    let originalImage = null;
-
-    fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
+        imgInput.onchange = (e) => {
             const reader = new FileReader();
             reader.onload = (event) => {
-                originalImage = new Image();
-                originalImage.src = event.target.result;
-                originalImage.onload = () => {
-                    widthInput.value = originalImage.width;
-                    document.getElementById('controls').style.display = 'block';
-                    processImage();
+                img.onload = () => {
+                    isLoaded = true;
+                    maskCanvas.width = img.width;
+                    maskCanvas.height = img.height;
+                    maskCtx.fillStyle = 'black';
+                    maskCtx.fillRect(0,0, maskCanvas.width, maskCanvas.height);
+                    document.getElementById('downloadBtn').disabled = false;
+                    resetView();
+                    render();
                 };
+                img.src = event.target.result;
             };
-            reader.readAsDataURL(file);
-        }
-    };
+            reader.readAsDataURL(e.target.files[0]);
+        };
 
-    const processImage = () => {
-        if (!originalImage) return;
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        const scale = widthInput.value / originalImage.width;
-        canvas.width = widthInput.value;
-        canvas.height = originalImage.height * scale;
-        
-        ctx.drawImage(originalImage, 0, 0, canvas.width, canvas.height);
-        
-        const quality = qualityInput.value / 100;
-        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        
-        preview.src = dataUrl;
-        preview.style.display = 'block';
-        downloadBtn.style.display = 'block';
-        
-        // Calculate Size
-        const head = 'data:image/jpeg;base64,'.length;
-        const sizeInBytes = Math.round((dataUrl.length - head) * 3 / 4);
-        sizeInfo.innerText = `Estimated Size: ${(sizeInBytes / 1024).toFixed(2)} KB`;
-        
-        downloadBtn.onclick = () => {
+        function resetView() {
+            scale = 1; offsetX = 0; offsetY = 0;
+            zoomSlider.value = 1;
+            document.getElementById('zoomValue').innerText = "100%";
+        }
+
+        function render() {
+            if(!isLoaded) return;
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            
+            // 1. Draw Background Color
+            ctx.fillStyle = bgColorInput.value;
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(canvas.width/2 + offsetX, canvas.height/2 + offsetY);
+            ctx.scale(scale, scale);
+            
+            // 2. Create Temp Canvas for Masking
+            let tempCanvas = document.createElement('canvas');
+            tempCanvas.width = img.width;
+            tempCanvas.height = img.height;
+            let tCtx = tempCanvas.getContext('2d');
+            
+            tCtx.drawImage(img, 0, 0);
+            tCtx.globalCompositeOperation = 'destination-in';
+            tCtx.drawImage(maskCanvas, 0, 0);
+            
+            // 3. Draw Masked Image
+            ctx.filter = `brightness(${document.getElementById('brightnessSlider').value}%)`;
+            ctx.drawImage(tempCanvas, -img.width/2, -img.height/2);
+            ctx.restore();
+            
+            updateSize();
+        }
+
+        canvas.onmousedown = (e) => { isDrawing = true; if(mode === 'erase') paint(e); };
+        window.onmousemove = (e) => { if(!isDrawing) return; if(mode === 'erase') paint(e); };
+        window.onmouseup = () => isDrawing = false;
+
+        function paint(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const brushSize = brushSlider.value / scale;
+            const imgX = (mouseX - canvas.width/2 - offsetX) / scale + img.width/2;
+            const imgY = (mouseY - canvas.height/2 - offsetY) / scale + img.height/2;
+
+            maskCtx.globalCompositeOperation = 'destination-out';
+            maskCtx.beginPath();
+            maskCtx.arc(imgX, imgY, brushSize, 0, Math.PI*2);
+            maskCtx.fill();
+            render();
+        }
+
+        document.getElementById('eraseMode').onclick = () => {
+            mode = 'erase';
+            document.getElementById('eraseMode').classList.add('active');
+            document.getElementById('moveMode').classList.remove('active');
+            document.getElementById('brushSettings').style.display = 'block';
+        };
+
+        document.getElementById('moveMode').onclick = () => {
+            mode = 'move';
+            document.getElementById('moveMode').classList.add('active');
+            document.getElementById('eraseMode').classList.remove('active');
+            document.getElementById('brushSettings').style.display = 'none';
+        };
+
+        zoomSlider.oninput = () => { scale = zoomSlider.value; document.getElementById('zoomValue').innerText = Math.round(scale*100)+'%'; render(); };
+        document.getElementById('brightnessSlider').oninput = render;
+        bgColorInput.oninput = render;
+        brushSlider.oninput = () => document.getElementById('brushVal').innerText = brushSlider.value;
+
+        function updateSize() {
+            const q = parseFloat(document.getElementById('qualitySlider').value);
+            const kb = Math.round((canvas.toDataURL('image/jpeg', q).length) * 3 / 4 / 1024);
+            document.getElementById('sizeEstimate').innerText = `Est. Size: ${kb} KB`;
+        }
+
+        document.getElementById('downloadBtn').onclick = () => {
             const link = document.createElement('a');
-            link.download = 'resized-image-digimitr.jpg';
-            link.href = dataUrl;
+            link.download = 'DigiMitra_Photo.jpg';
+            link.href = canvas.toDataURL('image/jpeg', parseFloat(document.getElementById('qualitySlider').value));
             link.click();
         };
-    };
-
-    qualityInput.oninput = () => { document.getElementById('qualVal').innerText = qualityInput.value; processImage(); };
-    widthInput.onchange = processImage;
-</script>
-
+    </script>
 </body>
 </html>
