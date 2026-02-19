@@ -9,34 +9,23 @@
     <style>
         :root { --primary: #1e293b; --accent: #3b82f6; --success: #059669; --bg: #f1f5f9; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; overflow-x: hidden; }
-        
         .navbar { background: var(--primary); color: white; padding: 10px 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        
-        /* Banner Styling */
         .ad-space { width: 100%; max-width: 1100px; height: 110px; margin: 15px auto; background: #fff; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .ad-space img { width: 100%; height: 100%; object-fit: contain; }
-
         .dashboard { display: grid; grid-template-columns: 250px 1fr 250px; gap: 20px; padding: 0 20px 20px 20px; max-width: 1500px; margin: 0 auto; }
-
-        /* Sidebar Styling */
         .sidebar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
         .sidebar h3 { font-size: 16px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 15px; color: var(--primary); }
         .preset-btn { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; transition: 0.2s; }
         .preset-btn:hover { background: var(--accent); color: white; }
-
-        /* Main Editor */
         .editor-card { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
         .editor-main { display: flex; flex-direction: row; }
         .controls { width: 320px; padding: 20px; border-right: 1px solid #eee; background: #fff; }
         .preview { flex: 1; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 500px; }
         .canvas-wrap { border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-
         .input-box { margin-bottom: 15px; }
         .input-box label { font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; }
         input[type="text"], input[type="range"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        
         .btn-main { background: var(--success); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        
         @media (max-width: 1100px) { .dashboard { grid-template-columns: 1fr; } .sidebar { order: 2; } .editor-main { flex-direction: column; } .controls { width: 100%; } }
     </style>
 </head>
@@ -65,7 +54,6 @@
                     <button class="btn-main" style="background:var(--accent)">Choose Photo</button>
                     <input type="file" id="imageInput" accept="image/*" style="position:absolute; top:0; left:0; opacity:0; width:100%; height:100%; cursor:pointer;">
                 </div>
-                
                 <div class="input-box">
                     <label>Candidate Name</label>
                     <input type="text" id="userName" placeholder="Type name..." oninput="render()">
@@ -74,22 +62,18 @@
                     <label>Date of Photo</label>
                     <input type="text" id="userDate" placeholder="DD-MM-YYYY" oninput="render()">
                 </div>
-                
                 <div class="input-box">
                     <label>Zoom & Brightness</label>
                     <input type="range" id="zoom" min="0.1" max="2" step="0.01" value="1" oninput="render()">
                     <input type="range" id="bright" min="50" max="150" value="100" oninput="render()">
                 </div>
-
                 <div class="input-box" style="background:#fff7ed; padding:10px; border-radius:8px;">
                     <label>File Quality (Size Control)</label>
                     <input type="range" id="quality" min="0.1" max="1.0" step="0.01" value="0.8" oninput="render()">
                     <div id="sizeInfo" style="text-align:center; font-weight:bold; color:var(--primary); margin-top:5px;">- KB</div>
                 </div>
-
                 <button id="dlBtn" class="btn-main" disabled>Download Now</button>
             </div>
-            
             <div class="preview">
                 <div class="canvas-wrap">
                     <canvas id="canvas" width="350" height="450"></canvas>
@@ -106,7 +90,7 @@
             <li>Adjust <b>Quality</b> slider for KB.</li>
         </ul>
         <hr>
-        <button class="preset-btn" style="background:#25d366; color:white; border:none; text-align:center;" onclick="window.open('whatsapp://send?text=Check this cool photo resizer tool!')">
+        <button class="preset-btn" style="background:#25d366; color:white; border:none; text-align:center;" onclick="shareOnWhatsApp()">
             <i class="fab fa-whatsapp"></i> Share on WhatsApp
         </button>
     </div>
@@ -136,7 +120,13 @@
         }
     });
 
-    // Editor Core
+    // WhatsApp Function
+    window.shareOnWhatsApp = () => {
+        const url = window.location.href;
+        const msg = encodeURIComponent("Dosto, govt exams ke liye photo par naam aur date likhna ho ya size kam karna ho, toh ye tool try karein: " + url);
+        window.open("https://api.whatsapp.com/send?text=" + msg, "_blank");
+    };
+
     const cvs = document.getElementById('canvas');
     const ctx = cvs.getContext('2d');
     let rawImg = new Image(); let loaded = false;
@@ -147,7 +137,6 @@
         r.readAsDataURL(e.target.files[0]);
     };
 
-    // Preset Function
     window.applyPreset = (type) => {
         if(type === 'sig') { cvs.width = 300; cvs.height = 150; document.getElementById('quality').value = 0.5; }
         else { cvs.width = 350; cvs.height = 450; document.getElementById('quality').value = 0.8; }
