@@ -108,6 +108,8 @@
         const ctx = canvas.getContext('2d');
         const imgInput = document.getElementById('imageInput');
         const zoomSlider = document.getElementById('zoomSlider');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const brightnessSlider = document.getElementById('brightnessSlider');
         const bgColorInput = document.getElementById('bgColor');
         const brushSlider = document.getElementById('brushSize');
         
@@ -148,6 +150,7 @@
             if(!isLoaded) return;
             ctx.clearRect(0,0, canvas.width, canvas.height);
             
+            // 1. Draw Background
             ctx.fillStyle = bgColorInput.value;
             ctx.fillRect(0,0, canvas.width, canvas.height);
             
@@ -164,11 +167,11 @@
             tCtx.globalCompositeOperation = 'destination-in';
             tCtx.drawImage(maskCanvas, 0, 0);
             
-            ctx.filter = `brightness(${document.getElementById('brightnessSlider').value}%)`;
+            ctx.filter = `brightness(${brightnessSlider.value}%)`;
             ctx.drawImage(tempCanvas, -img.width/2, -img.height/2);
             ctx.restore();
             
-            updateSize();
+            updateSize(); // Fix: Har render par size update hoga
         }
 
         canvas.onmousedown = (e) => { isDrawing = true; if(mode === 'erase') paint(e); };
@@ -205,21 +208,27 @@
             document.getElementById('brushSettings').style.display = 'none';
         };
 
+        // Fix: Slider events for real-time KB change
         zoomSlider.oninput = () => { scale = zoomSlider.value; document.getElementById('zoomValue').innerText = Math.round(scale*100)+'%'; render(); };
-        document.getElementById('brightnessSlider').oninput = render;
+        qualitySlider.oninput = render; 
+        brightnessSlider.oninput = render;
         bgColorInput.oninput = render;
         brushSlider.oninput = () => document.getElementById('brushVal').innerText = brushSlider.value;
 
         function updateSize() {
-            const q = parseFloat(document.getElementById('qualitySlider').value);
-            const kb = Math.round((canvas.toDataURL('image/jpeg', q).length) * 3 / 4 / 1024);
-            document.getElementById('sizeEstimate').innerText = `Est. Size: ${kb} KB`;
+            const q = parseFloat(qualitySlider.value);
+            // Fix: Accurate KB calculation formula
+            const dataUrl = canvas.toDataURL('image/jpeg', q);
+            const head = 'data:image/jpeg;base64,'.length;
+            const sizeInBytes = Math.round((dataUrl.length - head) * 0.75);
+            const sizeInKb = (sizeInBytes / 1024).toFixed(2);
+            document.getElementById('sizeEstimate').innerText = `Est. Size: ${sizeInKb} KB`;
         }
 
         document.getElementById('downloadBtn').onclick = () => {
             const link = document.createElement('a');
             link.download = 'Edited_Photo.jpg';
-            link.href = canvas.toDataURL('image/jpeg', parseFloat(document.getElementById('qualitySlider').value));
+            link.href = canvas.toDataURL('image/jpeg', parseFloat(qualitySlider.value));
             link.click();
         };
     </script>
