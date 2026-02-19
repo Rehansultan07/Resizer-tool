@@ -3,58 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Photo Editor - Govt Exam Tool</title>
+    <title>Pro Photo Editor - Professional Govt Exam Tool</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1e293b; --accent: #3b82f6; --success: #059669; }
-        body { font-family: sans-serif; background: #f1f5f9; margin: 0; }
+        :root { --primary: #1e293b; --accent: #3b82f6; --success: #059669; --bg: #f1f5f9; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; overflow-x: hidden; }
         
-        /* Dashboard Layout Fix */
-        .main-wrapper { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; justify-content: center; }
+        .navbar { background: var(--primary); color: white; padding: 10px 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         
-        .sidebar { width: 250px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .editor-container { flex: 1; max-width: 800px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        
-        .ad-space { width: 100%; max-width: 900px; height: 110px; margin: 10px auto; background: #fff; overflow: hidden; display: flex; justify-content: center; }
+        /* Banner Styling */
+        .ad-space { width: 100%; max-width: 1100px; height: 110px; margin: 15px auto; background: #fff; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .ad-space img { width: 100%; height: 100%; object-fit: contain; }
 
-        canvas { border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: white; max-width: 100%; height: auto; }
+        .dashboard { display: grid; grid-template-columns: 250px 1fr 250px; gap: 20px; padding: 0 20px 20px 20px; max-width: 1500px; margin: 0 auto; }
+
+        /* Sidebar Styling */
+        .sidebar { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; }
+        .sidebar h3 { font-size: 16px; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 15px; color: var(--primary); }
+        .preset-btn { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 6px; cursor: pointer; text-align: left; font-size: 13px; transition: 0.2s; }
+        .preset-btn:hover { background: var(--accent); color: white; }
+
+        /* Main Editor */
+        .editor-card { background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+        .editor-main { display: flex; flex-direction: row; }
+        .controls { width: 320px; padding: 20px; border-right: 1px solid #eee; background: #fff; }
+        .preview { flex: 1; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 500px; }
+        .canvas-wrap { border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+        .input-box { margin-bottom: 15px; }
+        .input-box label { font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="range"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
         
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .main-wrapper { flex-direction: column; align-items: center; }
-            .sidebar, .editor-container { width: 100%; }
-        }
+        .btn-main { background: var(--success); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        
+        @media (max-width: 1100px) { .dashboard { grid-template-columns: 1fr; } .sidebar { order: 2; } .editor-main { flex-direction: column; } .controls { width: 100%; } }
     </style>
 </head>
 <body>
 
+<div class="navbar">
+    <h2><i class="fas fa-camera-retro"></i> PRO PHOTO RESIZER</h2>
+</div>
+
 <div id="topAdArea" class="ad-space"></div>
 
-<div class="main-wrapper">
+<div class="dashboard">
     <div class="sidebar">
-        <h3 style="font-size:16px; border-bottom:2px solid var(--accent); padding-bottom:5px;">Exam Presets</h3>
-        <button style="width:100%; margin:5px 0; padding:10px; cursor:pointer;" onclick="setPreset(350, 450)">Passport Photo</button>
-        <button style="width:100%; margin:5px 0; padding:10px; cursor:pointer;" onclick="setPreset(300, 150)">Signature</button>
+        <h3><i class="fas fa-list"></i> Exam Presets</h3>
+        <button class="preset-btn" onclick="applyPreset('passport')">Standard Passport Photo</button>
+        <button class="preset-btn" onclick="applyPreset('ssc')">SSC (20-50 KB)</button>
+        <button class="preset-btn" onclick="applyPreset('up')">UP Police Special</button>
+        <button class="preset-btn" onclick="applyPreset('sig')">Signature (10-20 KB)</button>
+        <p style="font-size: 11px; color: #666; margin-top: 20px;">*One-click size setting</p>
     </div>
 
-    <div class="editor-container">
-        <input type="file" id="imageInput" style="margin-bottom:15px;">
-        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
-            <input type="text" id="userName" placeholder="Name on Photo" oninput="draw()">
-            <input type="text" id="userDate" placeholder="Date on Photo" oninput="draw()">
-            <label>Zoom: <input type="range" id="zoom" min="0.1" max="2" step="0.01" value="1" oninput="draw()"></label>
-            <label>Quality: <input type="range" id="quality" min="0.1" max="1" step="0.1" value="0.8" oninput="draw()"></label>
-            <div id="kbSize" style="font-weight:bold; color:var(--success);">0 KB</div>
+    <div class="editor-card">
+        <div class="editor-main">
+            <div class="controls">
+                <div style="position:relative; margin-bottom:15px;">
+                    <button class="btn-main" style="background:var(--accent)">Choose Photo</button>
+                    <input type="file" id="imageInput" accept="image/*" style="position:absolute; top:0; left:0; opacity:0; width:100%; height:100%; cursor:pointer;">
+                </div>
+                
+                <div class="input-box">
+                    <label>Candidate Name</label>
+                    <input type="text" id="userName" placeholder="Type name..." oninput="render()">
+                </div>
+                <div class="input-box">
+                    <label>Date of Photo</label>
+                    <input type="text" id="userDate" placeholder="DD-MM-YYYY" oninput="render()">
+                </div>
+                
+                <div class="input-box">
+                    <label>Zoom & Brightness</label>
+                    <input type="range" id="zoom" min="0.1" max="2" step="0.01" value="1" oninput="render()">
+                    <input type="range" id="bright" min="50" max="150" value="100" oninput="render()">
+                </div>
+
+                <div class="input-box" style="background:#fff7ed; padding:10px; border-radius:8px;">
+                    <label>File Quality (Size Control)</label>
+                    <input type="range" id="quality" min="0.1" max="1.0" step="0.01" value="0.8" oninput="render()">
+                    <div id="sizeInfo" style="text-align:center; font-weight:bold; color:var(--primary); margin-top:5px;">- KB</div>
+                </div>
+
+                <button id="dlBtn" class="btn-main" disabled>Download Now</button>
+            </div>
+            
+            <div class="preview">
+                <div class="canvas-wrap">
+                    <canvas id="canvas" width="350" height="450"></canvas>
+                </div>
+            </div>
         </div>
-        <canvas id="canvas" width="350" height="450"></canvas>
-        <br><br>
-        <button id="dlBtn" style="background:var(--success); color:white; padding:15px 30px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Download Photo</button>
     </div>
 
     <div class="sidebar">
-        <h3 style="font-size:16px; border-bottom:2px solid var(--accent); padding-bottom:5px;">Share</h3>
-        <button style="width:100%; background:#25d366; color:white; padding:10px; border:none; border-radius:5px; cursor:pointer;" onclick="share()">Share on WhatsApp</button>
+        <h3><i class="fas fa-info-circle"></i> Instructions</h3>
+        <ul style="font-size: 12px; padding-left: 15px; line-height: 1.8;">
+            <li>Upload high quality photo.</li>
+            <li>Use <b>Name/Date</b> if required.</li>
+            <li>Adjust <b>Quality</b> slider for KB.</li>
+        </ul>
+        <hr>
+        <button class="preset-btn" style="background:#25d366; color:white; border:none; text-align:center;" onclick="window.open('whatsapp://send?text=Check this cool photo resizer tool!')">
+            <i class="fab fa-whatsapp"></i> Share on WhatsApp
+        </button>
     </div>
 </div>
 
@@ -74,51 +128,58 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    onValue(ref(db, 'tool_ads'), (s) => {
-        const d = s.val();
-        if(d) {
-            if(d.top) document.getElementById('topAdArea').innerHTML = `<a href="${d.top.url}" target="_blank"><img src="${d.top.img}"></a>`;
-            if(d.bottom) document.getElementById('botAdArea').innerHTML = `<a href="${d.bottom.url}" target="_blank"><img src="${d.bottom.img}"></a>`;
+    onValue(ref(db, 'tool_ads'), (snap) => {
+        const ads = snap.val();
+        if(ads) {
+            if(ads.top) document.getElementById('topAdArea').innerHTML = `<a href="${ads.top.url}" target="_blank"><img src="${ads.top.img}"></a>`;
+            if(ads.bottom) document.getElementById('botAdArea').innerHTML = `<a href="${ads.bottom.url}" target="_blank"><img src="${ads.bottom.img}"></a>`;
         }
     });
 
+    // Editor Core
     const cvs = document.getElementById('canvas');
     const ctx = cvs.getContext('2d');
-    let img = new Image();
+    let rawImg = new Image(); let loaded = false;
 
     document.getElementById('imageInput').onchange = (e) => {
         const r = new FileReader();
-        r.onload = (f) => { img.onload = () => draw(); img.src = f.target.result; };
+        r.onload = (f) => { rawImg.onload = () => { loaded = true; render(); }; rawImg.src = f.target.result; };
         r.readAsDataURL(e.target.files[0]);
     };
 
-    window.setPreset = (w, h) => { cvs.width = w; cvs.height = h; draw(); };
+    // Preset Function
+    window.applyPreset = (type) => {
+        if(type === 'sig') { cvs.width = 300; cvs.height = 150; document.getElementById('quality').value = 0.5; }
+        else { cvs.width = 350; cvs.height = 450; document.getElementById('quality').value = 0.8; }
+        render();
+    };
 
-    window.draw = () => {
-        if(!img.src) return;
+    window.render = () => {
+        if(!loaded) return;
         ctx.fillStyle = "white"; ctx.fillRect(0,0, cvs.width, cvs.height);
         ctx.save();
         ctx.translate(cvs.width/2, (cvs.height-60)/2);
         ctx.scale(document.getElementById('zoom').value, document.getElementById('zoom').value);
-        ctx.drawImage(img, -img.width/2, -img.height/2);
+        ctx.filter = `brightness(${document.getElementById('bright').value}%)`;
+        ctx.drawImage(rawImg, -rawImg.width/2, -rawImg.height/2);
         ctx.restore();
 
-        const n = document.getElementById('userName').value;
-        const d = document.getElementById('userDate').value;
-        if(n || d) {
+        const name = document.getElementById('userName').value;
+        const date = document.getElementById('userDate').value;
+        if(name || date) {
             ctx.fillStyle = "white"; ctx.fillRect(0, cvs.height-70, cvs.width, 70);
             ctx.fillStyle = "black"; ctx.font = "bold 16px Arial"; ctx.textAlign="center";
-            ctx.fillText(n.toUpperCase(), cvs.width/2, cvs.height-40);
-            ctx.fillText(d, cvs.width/2, cvs.height-15);
+            ctx.fillText(name.toUpperCase(), cvs.width/2, cvs.height-40);
+            ctx.fillText(date, cvs.width/2, cvs.height-15);
         }
-
+        
         const data = cvs.toDataURL('image/jpeg', parseFloat(document.getElementById('quality').value));
-        document.getElementById('kbSize').innerText = Math.round((data.length - 22) * 0.75 / 1024) + " KB";
-        document.getElementById('dlBtn').onclick = () => { const a = document.createElement('a'); a.download="photo.jpg"; a.href=data; a.click(); };
-    };
-
-    window.share = () => {
-        window.open("https://api.whatsapp.com/send?text=Best Photo Tool: " + window.location.href);
+        const kb = Math.round((data.length - 22) * 0.75) / 1024;
+        document.getElementById('sizeInfo').innerText = kb.toFixed(2) + " KB";
+        document.getElementById('dlBtn').disabled = false;
+        document.getElementById('dlBtn').onclick = () => {
+            const a = document.createElement('a'); a.download = "edit.jpg"; a.href = data; a.click();
+        };
     };
 </script>
 </body>
