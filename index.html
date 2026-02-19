@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Photo Editor - Resize & BG Remover</title>
+    <title>Pro Photo Editor - Name & Date Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -14,9 +14,9 @@
         .back-btn { background: #f59e0b; color: #000; text-decoration: none; padding: 8px 18px; border-radius: 4px; font-weight: 600; font-size: 13px; }
         
         .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .editor-card { background: white; width: 100%; max-width: 1200px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+        .editor-card { background: white; width: 100%; max-width: 1200px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: row; }
         
-        .controls-panel { padding: 20px; background: #fff; flex: 1; border-right: 1px solid #e5e7eb; max-height: 90vh; overflow-y: auto; }
+        .controls-panel { padding: 20px; background: #fff; width: 350px; border-right: 1px solid #e5e7eb; max-height: 90vh; overflow-y: auto; }
         .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
         .preset-btn { padding: 8px; font-size: 11px; font-weight: 600; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; cursor: pointer; transition: 0.2s; }
         .preset-btn:hover { background: #e2e8f0; }
@@ -32,79 +32,75 @@
         .control-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 5px; }
         .slider-range { width: 100%; cursor: pointer; }
         
-        .editor-panel { flex: 2; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 30px; min-height: 500px; position: relative; }
+        .input-text { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; margin-bottom: 5px; box-sizing: border-box; }
+
+        .editor-panel { flex: 1; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 30px; min-height: 600px; position: relative; }
         .canvas-container { box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 8px solid white; border-radius: 4px; background: white; }
         #editorCanvas { display: block; max-width: 100%; cursor: crosshair; }
         
-        .btn-download { background: linear-gradient(135deg, #059669, #047857); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .action-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-download { flex: 2; background: linear-gradient(135deg, #059669, #047857); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; }
+        .btn-reset { flex: 1; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
         .btn-download:disabled { background: #94a3b8; cursor: not-allowed; }
         
         .size-badge { font-weight: 700; text-align: center; font-size: 14px; margin-top: 5px; }
         .limit-msg { color: var(--danger); font-size: 10px; text-align: center; margin-top: 4px; display: none; }
 
-        .ad-space { width: 100%; max-width: 1200px; height: 90px; background: #fff; border: 1px dashed #bbb; margin: 15px 0; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; border-radius: 8px; }
-
-        @media (min-width: 768px) { .editor-card { flex-direction: row; } }
+        @media (max-width: 768px) { .editor-card { flex-direction: column; } .controls-panel { width: 100%; } }
     </style>
 </head>
 <body>
 
     <div class="navbar">
-        <div class="nav-brand"><i class="fas fa-camera-retro"></i> <h1>PRO EDITOR</h1></div>
-        <a href="/" class="back-btn"><i class="fas fa-home"></i> Home</a>
+        <div class="nav-brand"><i class="fas fa-edit"></i> <h1>PRO EDITOR</h1></div>
+        <a href="/" class="back-btn"><i class="fas fa-undo"></i> Reset Session</a>
     </div>
 
     <div class="main-container">
-        <div class="ad-space">Google AdSense - Banner Top</div>
-
         <div class="editor-card">
             <div class="controls-panel">
-                <p style="font-size:12px; font-weight:700; color:#1e293b; margin-bottom:10px;">Exam Presets:</p>
                 <div class="preset-grid">
-                    <button class="preset-btn" onclick="applyPreset(350, 450)"><i class="fas fa-user-tie"></i> Passport</button>
-                    <button class="preset-btn" onclick="applyPreset(413, 531)"><i class="fas fa-university"></i> SSC/UPSC</button>
-                    <button class="preset-btn" onclick="applyPreset(400, 200)"><i class="fas fa-pen-nib"></i> Signature</button>
-                    <button class="preset-btn" onclick="applyPreset(600, 600)"><i class="fas fa-id-card"></i> Visa Size</button>
+                    <button class="preset-btn" onclick="applyPreset(350, 450)">Passport Size</button>
+                    <button class="preset-btn" onclick="applyPreset(413, 531)">SSC / UPSC</button>
                 </div>
 
                 <div class="upload-btn-wrapper">
-                    <button class="btn-upload"><i class="fas fa-cloud-upload-alt"></i> Upload Photo</button>
+                    <button class="btn-upload"><i class="fas fa-upload"></i> Upload Photo</button>
                     <input type="file" id="imageInput" accept="image/*" style="position:absolute; left:0; top:0; opacity:0; width:100%; height:100%; cursor:pointer;">
                 </div>
 
                 <div class="tool-bar">
-                    <button class="tool-btn active" id="moveMode"><i class="fas fa-arrows-alt"></i> Move</button>
-                    <button class="tool-btn" id="eraseMode"><i class="fas fa-eraser"></i> Erase</button>
-                </div>
-
-                <div class="control-group" id="brushSettings" style="display:none; border-left: 4px solid var(--accent);">
-                    <label class="control-label">Eraser Size: <span id="brushVal">25</span></label>
-                    <input type="range" id="brushSize" class="slider-range" min="5" max="80" value="25">
+                    <button class="tool-btn active" id="moveMode">Move</button>
+                    <button class="tool-btn" id="eraseMode">Erase BG</button>
                 </div>
 
                 <div class="control-group">
-                    <label class="control-label">Background Color</label>
-                    <input type="color" id="bgColor" value="#ffffff" style="width:100%; height:30px; border:none; border-radius:4px; cursor:pointer;">
-                </div>
-
-                <div class="control-group">
-                    <label class="control-label">Zoom Level <span id="zoomValue">100%</span></label>
-                    <input type="range" id="zoomSlider" class="slider-range" min="0.1" max="2.5" step="0.01" value="1">
+                    <label class="control-label">Add Name & Date</label>
+                    <input type="text" id="userName" class="input-text" placeholder="Enter Full Name" oninput="render()">
+                    <input type="text" id="userDate" class="input-text" placeholder="Date (e.g. 19/02/2026)" oninput="render()">
                 </div>
 
                 <div class="control-group">
                     <label class="control-label">Brightness <span id="brightValue">100%</span></label>
-                    <input type="range" id="brightnessSlider" class="slider-range" min="50" max="150" value="100">
+                    <input type="range" id="brightnessSlider" class="slider-range" min="50" max="150" value="100" oninput="render()">
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Zoom <span id="zoomValue">100%</span></label>
+                    <input type="range" id="zoomSlider" class="slider-range" min="0.1" max="2.5" step="0.01" value="1" oninput="updateZoom()">
                 </div>
 
                 <div class="control-group" style="background: #fff7ed;">
-                    <label class="control-label" style="color:#c2410c;">Output Quality (KB)</label>
-                    <input type="range" id="qualitySlider" class="slider-range" min="0.1" max="1.0" step="0.01" value="0.8">
+                    <label class="control-label" style="color:#c2410c;">Quality (KB Control)</label>
+                    <input type="range" id="qualitySlider" class="slider-range" min="0.1" max="1.0" step="0.01" value="0.8" oninput="render()">
                     <div id="sizeEstimate" class="size-badge">Size: - KB</div>
-                    <div id="limitMsg" class="limit-msg">Limit: 10KB to 3MB only!</div>
+                    <div id="limitMsg" class="limit-msg">10KB to 3MB only!</div>
                 </div>
 
-                <button id="downloadBtn" class="btn-download" disabled><i class="fas fa-download"></i> Download JPG</button>
+                <div class="action-btns">
+                    <button id="downloadBtn" class="btn-download" disabled>Download</button>
+                    <button class="btn-reset" onclick="location.reload()">Reset</button>
+                </div>
             </div>
 
             <div class="editor-panel">
@@ -113,8 +109,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="ad-space">Google AdSense - Banner Bottom</div>
     </div>
 
     <script>
@@ -124,8 +118,8 @@
         const zoomSlider = document.getElementById('zoomSlider');
         const qualitySlider = document.getElementById('qualitySlider');
         const brightnessSlider = document.getElementById('brightnessSlider');
-        const bgColorInput = document.getElementById('bgColor');
-        const brushSlider = document.getElementById('brushSize');
+        const userName = document.getElementById('userName');
+        const userDate = document.getElementById('userDate');
         const downloadBtn = document.getElementById('downloadBtn');
         
         let img = new Image();
@@ -145,7 +139,6 @@
                     maskCanvas.height = img.height;
                     maskCtx.fillStyle = 'black';
                     maskCtx.fillRect(0,0, maskCanvas.width, maskCanvas.height);
-                    resetView();
                     render();
                 };
                 img.src = event.target.result;
@@ -153,86 +146,64 @@
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        function resetView() {
-            scale = 1; offsetX = 0; offsetY = 0;
-            zoomSlider.value = 1;
-            brightnessSlider.value = 100;
-            document.getElementById('zoomValue').innerText = "100%";
-            document.getElementById('brightValue').innerText = "100%";
-        }
-
         function applyPreset(w, h) {
             canvas.width = w;
             canvas.height = h;
             if(isLoaded) render();
         }
 
+        function updateZoom() {
+            scale = zoomSlider.value;
+            document.getElementById('zoomValue').innerText = Math.round(scale*100)+'%';
+            render();
+        }
+
         function render() {
             if(!isLoaded) return;
             ctx.clearRect(0,0, canvas.width, canvas.height);
-            ctx.fillStyle = bgColorInput.value;
+            ctx.fillStyle = "white"; // Default BG for Name strip
             ctx.fillRect(0,0, canvas.width, canvas.height);
             
             ctx.save();
-            ctx.translate(canvas.width/2 + offsetX, canvas.height/2 + offsetY);
+            ctx.translate(canvas.width/2 + offsetX, (canvas.height - 60)/2 + offsetY);
             ctx.scale(scale, scale);
             
             let tempCanvas = document.createElement('canvas');
             tempCanvas.width = img.width;
             tempCanvas.height = img.height;
             let tCtx = tempCanvas.getContext('2d');
-            
             tCtx.drawImage(img, 0, 0);
             tCtx.globalCompositeOperation = 'destination-in';
             tCtx.drawImage(maskCanvas, 0, 0);
             
-            // Brightness filter applied here
             ctx.filter = `brightness(${brightnessSlider.value}%)`;
             ctx.drawImage(tempCanvas, -img.width/2, -img.height/2);
             ctx.restore();
+
+            // Draw Name and Date Strip
+            if (userName.value || userDate.value) {
+                ctx.fillStyle = "white";
+                ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
+                ctx.fillStyle = "black";
+                ctx.font = "bold 16px Poppins";
+                ctx.textAlign = "center";
+                ctx.fillText(userName.value.toUpperCase(), canvas.width/2, canvas.height - 40);
+                ctx.font = "14px Poppins";
+                ctx.fillText(userDate.value, canvas.width/2, canvas.height - 15);
+            }
+            
             updateSize();
         }
 
-        canvas.onmousedown = (e) => { isDrawing = true; if(mode === 'erase') paint(e); };
+        // Move/Drag Logic
+        canvas.onmousedown = (e) => { isDrawing = true; };
         window.onmousemove = (e) => { 
-            if(!isDrawing) return; 
-            if(mode === 'erase') paint(e);
-            else if(mode === 'move') {
-                offsetX += e.movementX;
-                offsetY += e.movementY;
-                render();
-            }
+            if(!isDrawing || mode !== 'move') return; 
+            offsetX += e.movementX;
+            offsetY += e.movementY;
+            render();
         };
         window.onmouseup = () => isDrawing = false;
-
-        function paint(e) {
-            const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            const brushSize = brushSlider.value / scale;
-            const imgX = (mouseX - canvas.width/2 - offsetX) / scale + img.width/2;
-            const imgY = (mouseY - canvas.height/2 - offsetY) / scale + img.height/2;
-            maskCtx.globalCompositeOperation = 'destination-out';
-            maskCtx.beginPath();
-            maskCtx.arc(imgX, imgY, brushSize, 0, Math.PI*2);
-            maskCtx.fill();
-            render();
-        }
-
-        document.getElementById('eraseMode').onclick = () => { mode = 'erase'; toggleBtns(); };
-        document.getElementById('moveMode').onclick = () => { mode = 'move'; toggleBtns(); };
-
-        function toggleBtns() {
-            document.getElementById('eraseMode').classList.toggle('active', mode === 'erase');
-            document.getElementById('moveMode').classList.toggle('active', mode === 'move');
-            document.getElementById('brushSettings').style.display = mode === 'erase' ? 'block' : 'none';
-        }
-
-        zoomSlider.oninput = () => { scale = zoomSlider.value; document.getElementById('zoomValue').innerText = Math.round(scale*100)+'%'; render(); };
-        brightnessSlider.oninput = () => { document.getElementById('brightValue').innerText = brightnessSlider.value+'%'; render(); };
-        qualitySlider.oninput = render;
-        bgColorInput.oninput = render;
-        brushSlider.oninput = () => document.getElementById('brushVal').innerText = brushSlider.value;
 
         function updateSize() {
             const q = parseFloat(qualitySlider.value);
@@ -243,17 +214,15 @@
             if(sizeInKb < 10 || sizeInKb > 3072) {
                 downloadBtn.disabled = true;
                 document.getElementById('limitMsg').style.display = 'block';
-                document.getElementById('sizeEstimate').style.color = 'red';
             } else {
                 downloadBtn.disabled = false;
                 document.getElementById('limitMsg').style.display = 'none';
-                document.getElementById('sizeEstimate').style.color = '#059669';
             }
         }
 
         downloadBtn.onclick = () => {
             const link = document.createElement('a');
-            link.download = 'Govt_Ready_Photo.jpg';
+            link.download = 'Exam_Photo.jpg';
             link.href = canvas.toDataURL('image/jpeg', parseFloat(qualitySlider.value));
             link.click();
         };
