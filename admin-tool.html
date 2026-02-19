@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Admin - Manage & Delete</title>
+    <title>Tool Admin - Upload & Manage</title>
     <script>
         if (sessionStorage.getItem("toolAdmin") !== "true") {
-            let pin = prompt("Admin Security PIN:");
+            let pin = prompt("Admin PIN:");
             if (pin === "Rehan@786") { sessionStorage.setItem("toolAdmin", "true"); } 
             else { window.location.href = "index.html"; }
         }
     </script>
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
         .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        h2 { color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; }
-        .field-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; display: block; margin-bottom: 10px; }
-        .btn-update { background: #3b82f6; color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; margin-bottom: 10px; }
-        .btn-delete { background: #ef4444; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; opacity: 0.9; }
-        .btn-delete:hover { opacity: 1; background: #dc2626; }
+        h2 { border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin: 0 0 20px 0; }
+        label { display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 5px; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        .btn-update { background: #3b82f6; color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .loader { display: none; color: #3b82f6; font-weight: 700; text-align: center; margin-top: 15px; }
     </style>
 </head>
@@ -29,24 +27,18 @@
 <div class="box">
     <h2>Banner Management</h2>
     
-    <div class="field-group">
-        <label>TOP BANNER</label>
-        <input type="file" id="tFile" accept="image/*">
-        <input type="text" id="tUrl" placeholder="https://bank-link.com">
-    </div>
+    <label>TOP BANNER (Image & Affiliate Link)</label>
+    <input type="file" id="tFile" accept="image/*">
+    <input type="text" id="tUrl" placeholder="https://affiliate-link.com">
 
-    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #e2e8f0;">
 
-    <div class="field-group">
-        <label>BOTTOM BANNER</label>
-        <input type="file" id="bFile" accept="image/*">
-        <input type="text" id="bUrl" placeholder="https://amazon-link.com">
-    </div>
+    <label>BOTTOM BANNER (Image & Affiliate Link)</label>
+    <input type="file" id="bFile" accept="image/*">
+    <input type="text" id="bUrl" placeholder="https://affiliate-link.com">
 
     <button class="btn-update" onclick="handleUpload()">Upload & Update Live 🚀</button>
-    
-    <button class="btn-delete" onclick="deleteBanners()">🗑️ Clear All Banners</button>
-    
+    <button class="btn-delete" style="width:100%" onclick="deleteBanners()">🗑️ Clear All Banners</button>
     <div id="loader" class="loader">Processing... Please wait!</div>
 </div>
 
@@ -68,54 +60,34 @@
     async function uploadImage(file) {
         let formData = new FormData();
         formData.append("image", file);
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-            method: "POST",
-            body: formData
-        });
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: "POST", body: formData });
         const data = await res.json();
         if(data.success) return data.data.url;
         throw new Error(data.error.message);
     }
 
-    // Upload & Update Function
     window.handleUpload = async () => {
         const tFile = document.getElementById('tFile').files[0];
         const bFile = document.getElementById('bFile').files[0];
         const loader = document.getElementById('loader');
-
-        if(!tFile || !bFile) { alert("Please select both image files!"); return; }
-        
+        if(!tFile || !bFile) { alert("Select both images!"); return; }
         loader.style.display = "block";
         try {
-            const tImgUrl = await uploadImage(tFile);
-            const bImgUrl = await uploadImage(bFile);
-
+            const tImg = await uploadImage(tFile);
+            const bImg = await uploadImage(bFile);
             await set(ref(db, 'tool_ads'), {
-                top: { url: document.getElementById('tUrl').value, img: tImgUrl },
-                bottom: { url: document.getElementById('bUrl').value, img: bImgUrl }
+                top: { url: document.getElementById('tUrl').value, img: tImg },
+                bottom: { url: document.getElementById('bUrl').value, img: bImg }
             });
-
             loader.style.display = "none";
-            alert("Banners Updated Successfully! 🚀");
-        } catch (err) {
-            loader.style.display = "none";
-            alert("Upload Failed: " + err.message);
-        }
+            alert("Updated Successfully! 🚀");
+        } catch (err) { loader.style.display = "none"; alert("Error: " + err.message); }
     };
 
-    // Delete Function
     window.deleteBanners = async () => {
-        if(confirm("Kya aap sach mein saare banners hatana chahte hain?")) {
-            const loader = document.getElementById('loader');
-            loader.style.display = "block";
-            try {
-                await remove(ref(db, 'tool_ads')); // Firebase se data delete
-                loader.style.display = "none";
-                alert("All banners deleted! Tool ab khali dikhega.");
-            } catch (err) {
-                loader.style.display = "none";
-                alert("Delete failed: " + err.message);
-            }
+        if(confirm("Hatana hai saare banners?")) {
+            await remove(ref(db, 'tool_ads'));
+            alert("Deleted!");
         }
     };
 </script>
