@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Admin</title>
+    <script>
+        if (sessionStorage.getItem("toolAdmin") !== "true") {
+            let pin = prompt("Admin PIN:");
+            if (pin === "Rehan@786") { sessionStorage.setItem("toolAdmin", "true"); } 
+            else { window.location.href = "index.html"; }
+        }
+    </script>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
+        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { background: #3b82f6; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Manage Tool Banners</h2>
+    <input type="text" id="tUrl" placeholder="Top Ad Link">
+    <input type="text" id="tImg" placeholder="Top Image URL">
+    <hr>
+    <input type="text" id="bUrl" placeholder="Bottom Ad Link">
+    <input type="text" id="bImg" placeholder="Bottom Image URL">
+    <button onclick="saveAds()">Update Banners Live 🚀</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // Use same config as index.html
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "photo-resizer-e8230.firebaseapp.com",
+        projectId: "photo-resizer-e8230",
+        databaseURL: "https://photo-resizer-e8230-default-rtdb.asia-southeast1.firebasedatabase.app"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.saveAds = () => {
+        set(ref(db, 'tool_ads'), {
+            top: { url: document.getElementById('tUrl').value, img: document.getElementById('tImg').value },
+            bot: { url: document.getElementById('bUrl').value, img: document.getElementById('bImg').value }
+        }).then(() => alert("Ads Live! Refresh tool to see."));
+    };
+</script>
+</body>
+</html>
