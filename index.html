@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #1e293b; --accent: #3b82f6; --bg-light: #f8fafc; }
+        :root { --primary: #1e293b; --accent: #3b82f6; --bg-light: #f8fafc; --danger: #ef4444; }
         body { font-family: 'Poppins', sans-serif; background-color: #f3f4f6; margin: 0; display: flex; flex-direction: column; min-height: 100vh; }
         .navbar { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .nav-brand { display: flex; align-items: center; gap: 10px; }
@@ -34,8 +34,11 @@
         .canvas-container { box-shadow: 0 20px 50px rgba(0,0,0,0.2); border: 8px solid white; border-radius: 4px; position: relative; background: white; }
         #editorCanvas { display: block; max-width: 100%; cursor: crosshair; }
         
-        .btn-download { background: linear-gradient(135deg, #059669, #047857); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-download { background: linear-gradient(135deg, #059669, #047857); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        .btn-download:disabled { background: #94a3b8; cursor: not-allowed; opacity: 0.7; }
         
+        .size-warning { font-size: 11px; color: var(--danger); font-weight: 700; margin-top: 5px; display: none; text-align: center; }
+
         .ad-space { width: 100%; max-width: 1150px; height: 90px; background: #fff; border: 1px dashed #bbb; margin: 15px 0; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px; border-radius: 8px; }
 
         @media (min-width: 768px) { .editor-card { flex-direction: row; } }
@@ -66,7 +69,6 @@
                 <div class="control-group" id="brushSettings" style="display:none; border-left: 4px solid #3b82f6;">
                     <label class="control-label">Brush Size: <span id="brushVal">25</span></label>
                     <input type="range" id="brushSize" class="slider-range" min="5" max="80" value="25">
-                    <p style="font-size:10px; color:#64748b; margin-top:5px;">Tip: Manually erase parts of the background.</p>
                 </div>
 
                 <div class="control-group">
@@ -86,8 +88,9 @@
 
                 <div class="control-group" style="background: #fff7ed; border-color: #fed7aa;">
                     <label class="control-label" style="color:#9a3412;">Compression (KB Control)</label>
-                    <input type="range" id="qualitySlider" class="slider-range" min="0.1" max="1.0" step="0.05" value="0.8">
-                    <div id="sizeEstimate" style="font-weight:700; text-align:center; color:#c2410c; font-size:14px; margin-top:5px;">Estimated Size: - KB</div>
+                    <input type="range" id="qualitySlider" class="slider-range" min="0.1" max="1.0" step="0.01" value="0.8">
+                    <div id="sizeEstimate" style="font-weight:700; text-align:center; color:#c2410c; font-size:14px; margin-top:5px;">Est. Size: - KB</div>
+                    <div id="limitWarning" class="size-warning">File size must be between 10KB and 3MB!</div>
                 </div>
 
                 <button id="downloadBtn" class="btn-download" disabled><i class="fas fa-file-download"></i> Save & Download</button>
@@ -112,6 +115,8 @@
         const brightnessSlider = document.getElementById('brightnessSlider');
         const bgColorInput = document.getElementById('bgColor');
         const brushSlider = document.getElementById('brushSize');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const limitWarning = document.getElementById('limitWarning');
         
         let img = new Image();
         let maskCanvas = document.createElement('canvas');
@@ -131,7 +136,6 @@
                     maskCanvas.height = img.height;
                     maskCtx.fillStyle = 'black';
                     maskCtx.fillRect(0,0, maskCanvas.width, maskCanvas.height);
-                    document.getElementById('downloadBtn').disabled = false;
                     resetView();
                     render();
                 };
@@ -149,8 +153,6 @@
         function render() {
             if(!isLoaded) return;
             ctx.clearRect(0,0, canvas.width, canvas.height);
-            
-            // 1. Draw Background
             ctx.fillStyle = bgColorInput.value;
             ctx.fillRect(0,0, canvas.width, canvas.height);
             
@@ -171,7 +173,7 @@
             ctx.drawImage(tempCanvas, -img.width/2, -img.height/2);
             ctx.restore();
             
-            updateSize(); // Fix: Har render par size update hoga
+            updateSize();
         }
 
         canvas.onmousedown = (e) => { isDrawing = true; if(mode === 'erase') paint(e); };
@@ -182,7 +184,6 @@
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
-            
             const brushSize = brushSlider.value / scale;
             const imgX = (mouseX - canvas.width/2 - offsetX) / scale + img.width/2;
             const imgY = (mouseY - canvas.height/2 - offsetY) / scale + img.height/2;
@@ -208,7 +209,6 @@
             document.getElementById('brushSettings').style.display = 'none';
         };
 
-        // Fix: Slider events for real-time KB change
         zoomSlider.oninput = () => { scale = zoomSlider.value; document.getElementById('zoomValue').innerText = Math.round(scale*100)+'%'; render(); };
         qualitySlider.oninput = render; 
         brightnessSlider.oninput = render;
@@ -217,17 +217,27 @@
 
         function updateSize() {
             const q = parseFloat(qualitySlider.value);
-            // Fix: Accurate KB calculation formula
             const dataUrl = canvas.toDataURL('image/jpeg', q);
-            const head = 'data:image/jpeg;base64,'.length;
-            const sizeInBytes = Math.round((dataUrl.length - head) * 0.75);
-            const sizeInKb = (sizeInBytes / 1024).toFixed(2);
-            document.getElementById('sizeEstimate').innerText = `Est. Size: ${sizeInKb} KB`;
+            const sizeInBytes = Math.round((dataUrl.length - 22) * 0.75);
+            const sizeInKb = sizeInBytes / 1024;
+            
+            document.getElementById('sizeEstimate').innerText = `Est. Size: ${sizeInKb.toFixed(2)} KB`;
+
+            // Validation Logic: 10KB to 3MB (3072 KB)
+            if (sizeInKb < 10 || sizeInKb > 3072) {
+                downloadBtn.disabled = true;
+                limitWarning.style.display = 'block';
+                document.getElementById('sizeEstimate').style.color = '#ef4444';
+            } else {
+                downloadBtn.disabled = false;
+                limitWarning.style.display = 'none';
+                document.getElementById('sizeEstimate').style.color = '#c2410c';
+            }
         }
 
-        document.getElementById('downloadBtn').onclick = () => {
+        downloadBtn.onclick = () => {
             const link = document.createElement('a');
-            link.download = 'Edited_Photo.jpg';
+            link.download = 'Processed_Photo.jpg';
             link.href = canvas.toDataURL('image/jpeg', parseFloat(qualitySlider.value));
             link.click();
         };
