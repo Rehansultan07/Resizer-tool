@@ -3,103 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Admin - ImgBB Edition</title>
-    <script>
-        // Security PIN Check
-        if (sessionStorage.getItem("toolAdmin") !== "true") {
-            let pin = prompt("Admin Security PIN:");
-            if (pin === "Rehan@786") { sessionStorage.setItem("toolAdmin", "true"); } 
-            else { window.location.href = "index.html"; }
-        }
-    </script>
+    <title>Pro Photo Editor - Govt Exam Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
-        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; display: block !important; }
-        h2 { color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; }
-        .field-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 8px; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; display: block; margin-bottom: 10px; }
-        button { background: #3b82f6; color: white; border: none; padding: 16px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        button:hover { background: #2563eb; }
-        .loader { display: none; color: #3b82f6; font-weight: 700; text-align: center; margin-top: 15px; }
+        :root { --primary: #1e293b; --accent: #3b82f6; }
+        body { font-family: sans-serif; background: #f3f4f6; margin: 0; text-align: center; }
+        .ad-space { width: 100%; max-width: 900px; min-height: 90px; margin: 15px auto; background: #fff; border-radius: 8px; overflow: hidden; }
+        .ad-space img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+        .container { background: white; max-width: 1000px; margin: 20px auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        /* Baki aapka editor CSS yahan rahega */
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>Banner Manager</h2>
-    
-    <div class="field-group">
-        <label>TOP BANNER IMAGE</label>
-        <input type="file" id="tFile" accept="image/*">
-        <label>TOP BANNER LINK</label>
-        <input type="text" id="tUrl" placeholder="https://bank-link.com">
-    </div>
+    <div id="topAdArea" class="ad-space"></div>
 
-    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 25px 0;">
+    <div class="container">
+        <h1>Photo Resizer & Editor</h1>
+        </div>
 
-    <div class="field-group">
-        <label>BOTTOM BANNER IMAGE</label>
-        <input type="file" id="bFile" accept="image/*">
-        <label>BOTTOM BANNER LINK</label>
-        <input type="text" id="bUrl" placeholder="https://amazon-link.com">
-    </div>
+    <div id="botAdArea" class="ad-space"></div>
 
-    <button onclick="handleUpload()">Upload & Update Live 🚀</button>
-    <div id="loader" class="loader">Uploading... Please wait!</div>
-</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7de5a69594736", 
+            authDomain: "photo-resizer-e8230.firebaseapp.com",
+            projectId: "photo-resizer-e8230",
+            databaseURL: "https://photo-resizer-e8230-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyC7de5a69594736", 
-        authDomain: "photo-resizer-e8230.firebaseapp.com",
-        projectId: "photo-resizer-e8230",
-        databaseURL: "https://photo-resizer-e8230-default-rtdb.asia-southeast1.firebasedatabase.app"
-    };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const IMGBB_API_KEY = "8ec0b611b5113837d204d17bac111789"; // Aapki Key
-
-    async function uploadImage(file) {
-        let formData = new FormData();
-        formData.append("image", file);
-        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-            method: "POST",
-            body: formData
+        // Fetch Banners from Firebase
+        onValue(ref(db, 'tool_ads'), (snapshot) => {
+            const ads = snapshot.val();
+            if(ads) {
+                if(ads.top) {
+                    document.getElementById('topAdArea').innerHTML = `<a href="${ads.top.url}" target="_blank"><img src="${ads.top.img}"></a>`;
+                }
+                if(ads.bottom) {
+                    document.getElementById('botAdArea').innerHTML = `<a href="${ads.bottom.url}" target="_blank"><img src="${ads.bottom.img}"></a>`;
+                }
+            }
         });
-        const data = await res.json();
-        if(data.success) return data.data.url;
-        throw new Error(data.error.message);
-    }
-
-    window.handleUpload = async () => {
-        const tFile = document.getElementById('tFile').files[0];
-        const bFile = document.getElementById('bFile').files[0];
-        const loader = document.getElementById('loader');
-
-        if(!tFile || !bFile) { alert("Please select both image files!"); return; }
-        
-        loader.style.display = "block";
-        try {
-            const tImgUrl = await uploadImage(tFile);
-            const bImgUrl = await uploadImage(bFile);
-
-            await set(ref(db, 'tool_ads'), {
-                top: { url: document.getElementById('tUrl').value, img: tImgUrl },
-                bottom: { url: document.getElementById('bUrl').value, img: bImgUrl }
-            });
-
-            loader.style.display = "none";
-            alert("Banners Updated Successfully! 🚀");
-        } catch (err) {
-            loader.style.display = "none";
-            alert("Upload Failed: " + err.message);
-        }
-    };
-</script>
+    </script>
 </body>
 </html>
