@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Photo Editor - Professional Govt Exam Tool</title>
+    <title>Pro Photo Editor - Drag & Move Feature</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -22,7 +22,7 @@
         .editor-main { display: flex; flex-direction: row; }
         .controls { width: 320px; padding: 20px; border-right: 1px solid #eee; background: #fff; }
         .preview { flex: 1; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 20px; min-height: 500px; }
-        .canvas-wrap { border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .canvas-wrap { border: 8px solid white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); cursor: move; }
         .input-box { margin-bottom: 15px; }
         .input-box label { font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; }
         input[type="text"], input[type="range"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
@@ -72,7 +72,7 @@
                 </div>
                 <div class="input-box">
                     <label>Zoom & Brightness</label>
-                    <input type="range" id="zoom" min="0.1" max="2" step="0.01" value="1" oninput="render()">
+                    <input type="range" id="zoom" min="0.1" max="5" step="0.01" value="1" oninput="render()">
                     <input type="range" id="bright" min="50" max="150" value="100" oninput="render()">
                 </div>
                 <div class="input-box" style="background:#fff7ed; padding:10px; border-radius:8px;">
@@ -81,9 +81,10 @@
                     <div id="sizeInfo" style="text-align:center; font-weight:bold; color:var(--primary); margin-top:5px;">- KB</div>
                 </div>
                 <button id="dlBtn" class="btn-main" disabled>Download Now</button>
+                <p style="font-size: 10px; color: #ef4444; margin-top: 10px; text-align: center;">*Tip: You can drag the photo to adjust position.</p>
             </div>
             <div class="preview">
-                <div class="canvas-wrap">
+                <div class="canvas-wrap" id="canvasWrap">
                     <canvas id="canvas" width="350" height="450"></canvas>
                 </div>
             </div>
@@ -94,8 +95,9 @@
         <h3><i class="fas fa-info-circle"></i> Instructions</h3>
         <ul style="font-size: 12px; padding-left: 15px; line-height: 1.8;">
             <li>Upload high quality photo.</li>
+            <li>Drag photo to center it.</li>
             <li>Use <b>Name/Date</b> if required.</li>
-            <li>Adjust <b>Quality</b> slider for KB.</li>
+            <li>Adjust <b>Quality</b> for KB size.</li>
         </ul>
         <hr>
         <button class="preset-btn" style="background:#25d366; color:white; border:none; text-align:center;" onclick="shareOnWhatsApp()">
@@ -128,7 +130,6 @@
         }
     });
 
-    // --- GLOBAL FUNCTIONS ---
     window.shareOnWhatsApp = () => {
         const url = window.location.href;
         const msg = encodeURIComponent("Dosto, govt exams ke liye photo resizer tool: " + url);
@@ -140,11 +141,62 @@
     let rawImg = new Image(); 
     let loaded = false;
 
+    // Drag variables
+    let imgX = 0, imgY = 0;
+    let isDragging = false;
+    let startX, startY;
+
     document.getElementById('imageInput').onchange = (e) => {
         const r = new FileReader();
-        r.onload = (f) => { rawImg.onload = () => { loaded = true; render(); }; rawImg.src = f.target.result; };
+        r.onload = (f) => { 
+            rawImg.onload = () => { 
+                loaded = true; 
+                // Reset positions on new upload
+                imgX = cvs.width / 2;
+                imgY = (cvs.height - 60) / 2;
+                render(); 
+            }; 
+            rawImg.src = f.target.result; 
+        };
         r.readAsDataURL(e.target.files[0]);
     };
+
+    // Dragging Logic
+    const startDragging = (e) => {
+        isDragging = true;
+        const pos = getMousePos(e);
+        startX = pos.x - imgX;
+        startY = pos.y - imgY;
+    };
+
+    const stopDragging = () => isDragging = false;
+
+    const drag = (e) => {
+        if (!isDragging || !loaded) return;
+        e.preventDefault();
+        const pos = getMousePos(e);
+        imgX = pos.x - startX;
+        imgY = pos.y - startY;
+        render();
+    };
+
+    const getMousePos = (e) => {
+        const rect = cvs.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    };
+
+    // Events
+    cvs.addEventListener('mousedown', startDragging);
+    cvs.addEventListener('mousemove', drag);
+    window.addEventListener('mouseup', stopDragging);
+    cvs.addEventListener('touchstart', startDragging);
+    cvs.addEventListener('touchmove', drag);
+    window.addEventListener('touchend', stopDragging);
 
     window.applyPreset = (type) => {
         document.getElementById('quality').value = 0.8;
@@ -160,6 +212,9 @@
             case 'sig_bank': cvs.width = 140; cvs.height = 60; document.getElementById('quality').value = 0.4; break;
             case 'thumb': cvs.width = 400; cvs.height = 300; break;
         }
+        // Recenter after resize
+        imgX = cvs.width / 2;
+        imgY = (cvs.height - 60) / 2;
         render();
     };
 
@@ -167,7 +222,7 @@
         if(!loaded) return;
         ctx.fillStyle = "white"; ctx.fillRect(0,0, cvs.width, cvs.height);
         ctx.save();
-        ctx.translate(cvs.width/2, (cvs.height-60)/2);
+        ctx.translate(imgX, imgY);
         ctx.scale(document.getElementById('zoom').value, document.getElementById('zoom').value);
         ctx.filter = `brightness(${document.getElementById('bright').value}%)`;
         ctx.drawImage(rawImg, -rawImg.width/2, -rawImg.height/2);
@@ -190,7 +245,6 @@
             const a = document.createElement('a'); a.download = "edit.jpg"; a.href = data; a.click();
         };
     };
-    window.render = window.render; // Explicitly expose to window
 </script>
 </body>
 </html>
