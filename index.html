@@ -9,7 +9,12 @@
     <style>
         :root { --primary: #1e293b; --accent: #3b82f6; --success: #059669; --bg: #f1f5f9; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; overflow-x: hidden; }
-        .navbar { background: var(--primary); color: white; padding: 10px 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+        .navbar { background: var(--primary); color: white; padding: 10px 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); position: relative; }
+        
+        /* Back Button Style */
+        .back-btn { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: white; text-decoration: none; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 6px; transition: 0.3s; }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
+
         .ad-space { width: 100%; max-width: 1100px; height: 110px; margin: 15px auto; background: #fff; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .ad-space img { width: 100%; height: 100%; object-fit: contain; }
         .dashboard { display: grid; grid-template-columns: 250px 1fr 250px; gap: 20px; padding: 0 20px 20px 20px; max-width: 1500px; margin: 0 auto; }
@@ -26,12 +31,13 @@
         .input-box label { font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px; }
         input[type="text"], input[type="range"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
         .btn-main { background: var(--success); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        @media (max-width: 1100px) { .dashboard { grid-template-columns: 1fr; } .sidebar { order: 2; } .editor-main { flex-direction: column; } .controls { width: 100%; } }
+        @media (max-width: 1100px) { .dashboard { grid-template-columns: 1fr; } .sidebar { order: 2; } .editor-main { flex-direction: column; } .controls { width: 100%; } .back-btn span { display: none; } }
     </style>
 </head>
 <body>
 
 <div class="navbar">
+    <a href="https://digimitr.in" class="back-btn"><i class="fas fa-arrow-left"></i> <span>Home</span></a>
     <h2><i class="fas fa-camera-retro"></i> PRO PHOTO RESIZER</h2>
 </div>
 
@@ -120,7 +126,6 @@
         }
     });
 
-    // WhatsApp Function
     window.shareOnWhatsApp = () => {
         const url = window.location.href;
         const msg = encodeURIComponent("Dosto, govt exams ke liye photo par naam aur date likhna ho ya size kam karna ho, toh ye tool try karein: " + url);
